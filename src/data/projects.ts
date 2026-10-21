@@ -1,10 +1,16 @@
 export const projects = [
   {
+    title: "Image Warping and Mosaicing",
+    img: "/projects/proj4.webp",
+    desc: "CS 180 Project 4. Recovering homographies from point correspondences, rectifying images, and warping and blending photos into panoramic mosaics.",
+    url: "https://jiaweitang22.github.io/cs180-proj4/",
+    badge: "NEW",
+  },
+  {
     title: "Fun with Flow Models",
     img: "/projects/proj3.webp",
     desc: "CS 180 Project 3. Exploring the power of flow models for image generation.",
     url: "https://jiaweitang22.github.io/cs180-proj3/",
-    badge: "NEW",
   },
   {
     title: "Fun with Filters and Frequencies",
