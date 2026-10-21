@@ -14,10 +14,14 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="flash" aria-hidden="true"></div>
+
     <div class="page">
       <header class="header">
         <div class="brand">
-          <div class="name">Jiawei Tang</div>
+          <!-- RGB channels start misaligned and snap together, like the Prokudin-Gorskii project -->
+          <div class="name" data-text="Jiawei Tang">Jiawei Tang</div>
           <div class="meta">Software Engineer @ Samsara</div>
         </div>
 
@@ -41,12 +45,19 @@
             Take a look at my <a href="#projects" data-goto="projects">projects</a>,
             or feel free to <a href="#contact" data-goto="contact">reach out</a>!
           </p>
+
+          <dl class="exif">
+            <div><dt>now</dt><dd>building at samsara</dd></div>
+            <div><dt>developing</dt><dd>cs 180 project 4: image warping &amp; mosaicing</dd></div>
+            <div><dt>tip</dt><dd>try clicking the little camera at the bottom</dd></div>
+          </dl>
         </section>
 
         <section class="panel" data-panel="projects" hidden>
           <h1>projects</h1>
           <ul class="items">
             <li class="item">
+              <div class="item-frame">frame 03</div>
               <div class="item-title">Fun with Flow Models</div>
               <div class="item-meta">cs 180 · project 3 · python · pytorch · cuda</div>
               <div class="item-links">
@@ -56,6 +67,7 @@
               </div>
             </li>
             <li class="item">
+              <div class="item-frame">frame 02</div>
               <div class="item-title">Fun with Filters and Frequencies</div>
               <div class="item-meta">cs 180 · project 2 · convolutions · hybrid images · multiresolution blending</div>
               <div class="item-links">
@@ -65,6 +77,7 @@
               </div>
             </li>
             <li class="item">
+              <div class="item-frame">frame 01</div>
               <div class="item-title">Images of the Russian Empire</div>
               <div class="item-meta">cs 180 · project 1 · colorizing the prokudin-gorskii collection · image pyramids</div>
               <div class="item-links">
@@ -74,6 +87,7 @@
               </div>
             </li>
             <li class="item">
+              <div class="item-frame">frame 00</div>
               <div class="item-title">Becoming Friends with Your Camera</div>
               <div class="item-meta">cs 180 · project 0 · perspective · focal length · dolly zoom</div>
               <div class="item-links">
@@ -98,23 +112,22 @@
 
       <footer class="footer">
         <div>&copy; <span id="year">2026</span> Jiawei Tang</div>
+        <div class="settings">f/1.8 · 1/250s · iso 100</div>
       </footer>
     </div>
 
-    <button class="walker" type="button" aria-label="Walking robot. Click to pause." aria-pressed="false">
-      <span class="walker-bubble" aria-hidden="true">beep boop!</span>
+    <button class="walker" type="button" aria-label="Walking camera. Click to take a photo.">
+      <span class="walker-bubble" aria-hidden="true">say cheese!</span>
       <svg class="walker-bot" viewBox="0 0 64 64" aria-hidden="true">
-        <path class="stroke" d="M32 17V10" />
-        <rect class="solid" x="29" y="6" width="6" height="6" />
-        <rect class="body" x="16" y="17" width="32" height="30" />
-        <rect class="stroke" x="21" y="22" width="22" height="14" />
-        <rect class="solid" x="25" y="26" width="4" height="4" />
-        <rect class="solid" x="35" y="26" width="4" height="4" />
-        <path class="stroke" d="M27 33H37" />
-        <path class="stroke limb" d="M16 27L9 34" />
-        <path class="stroke limb alt" d="M48 27L55 34" />
-        <path class="stroke limb alt" d="M25 47V56H19" />
-        <path class="stroke limb" d="M39 47V56H45" />
+        <rect class="body" x="24" y="15" width="14" height="7" />
+        <rect class="solid" x="15" y="18" width="6" height="4" />
+        <rect class="body" x="11" y="22" width="42" height="25" />
+        <circle class="body" cx="32" cy="34.5" r="9" />
+        <circle class="stroke" cx="32" cy="34.5" r="5" />
+        <circle class="solid lens-glint" cx="30" cy="32.5" r="1.6" />
+        <rect class="led" x="44" y="26" width="5" height="3" />
+        <path class="stroke limb" d="M23 47V56H17" />
+        <path class="stroke limb alt" d="M41 47V56H47" />
       </svg>
     </button>
 

@@ -38,9 +38,25 @@ document.getElementById("year").textContent = new Date().getFullYear();
 
 const walker = document.querySelector(".walker");
 const bubble = walker.querySelector(".walker-bubble");
+const flash = document.querySelector(".flash");
+const quietMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let shots = 0;
+let resetTimer;
+
 walker.addEventListener("click", () => {
-  const paused = walker.classList.toggle("paused");
-  walker.setAttribute("aria-pressed", String(paused));
-  walker.setAttribute("aria-label", paused ? "Paused robot. Click to resume." : "Walking robot. Click to pause.");
-  bubble.textContent = paused ? "break time!" : "beep boop!";
+  shots += 1;
+  if (!quietMotion.matches) {
+    // restart the flash animation even on rapid clicks
+    flash.classList.remove("go");
+    void flash.offsetWidth;
+    flash.classList.add("go");
+  }
+  walker.classList.add("snapped");
+  bubble.textContent = shots === 1 ? "click! got you." : `click! ${shots} shots`;
+
+  clearTimeout(resetTimer);
+  resetTimer = setTimeout(() => {
+    walker.classList.remove("snapped");
+    bubble.textContent = "say cheese!";
+  }, 1600);
 });

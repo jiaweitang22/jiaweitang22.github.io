@@ -1,4 +1,4 @@
-/* Minimal monochrome, typewriter-style theme */
+/* Monochrome darkroom theme with a single red "safelight" accent */
 *,
 *::before,
 *::after {
@@ -8,11 +8,13 @@
 }
 
 :root {
-  --bg: #0b0b0b;
-  --fg: #f2f2f2;
-  --muted: rgba(242, 242, 242, 0.7);
-  --border: rgba(242, 242, 242, 0.18);
-  --focus: rgba(242, 242, 242, 0.4);
+  --bg: #0d0c0b;
+  --fg: #f2efe9;
+  --muted: rgba(242, 239, 233, 0.68);
+  --border: rgba(242, 239, 233, 0.2);
+  --focus: rgba(242, 239, 233, 0.4);
+  --red: #ff4d3d;
+  --cyan: #3dd6ff;
 }
 
 body {
@@ -24,6 +26,11 @@ body {
   text-transform: lowercase;
 }
 
+::selection {
+  background: var(--red);
+  color: var(--bg);
+}
+
 a {
   color: var(--fg);
   text-decoration: none;
@@ -31,13 +38,37 @@ a {
 }
 
 a:hover {
-  border-bottom-color: var(--fg);
+  border-bottom-color: var(--red);
 }
 
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
+}
+
+/* Film grain over everything */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Camera flash */
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+}
+
+.flash.go {
+  animation: flash 600ms ease-out;
 }
 
 .page {
@@ -57,9 +88,43 @@ button:focus-visible {
   border-bottom: 1px solid var(--border);
 }
 
+/* Name as three color plates: red and cyan offsets that register on load */
 .name {
+  position: relative;
+  width: max-content;
   font-size: 1.05rem;
   font-weight: 600;
+}
+
+.name::before,
+.name::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.name::before {
+  color: var(--red);
+  animation: register-red 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.name::after {
+  color: var(--cyan);
+  animation: register-cyan 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.brand:hover .name::before {
+  animation: none;
+  transform: translate(-3px, 1px);
+  opacity: 0.9;
+}
+
+.brand:hover .name::after {
+  animation: none;
+  transform: translate(3px, -1px);
+  opacity: 0.9;
 }
 
 .meta {
@@ -91,9 +156,25 @@ button:focus-visible {
   border-color: var(--fg);
 }
 
+/* Blinking "rec" dot on the active tab */
+.tab[aria-selected="true"]::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 8px 1px 0;
+  border-radius: 50%;
+  background: var(--red);
+  animation: blink 1.6s steps(1) infinite;
+}
+
 .content {
   flex: 1;
   padding-top: 24px;
+}
+
+.panel:not([hidden]) {
+  animation: develop 500ms ease-out;
 }
 
 .panel h1 {
@@ -107,6 +188,30 @@ button:focus-visible {
   color: var(--muted);
 }
 
+/* "Photo metadata" block on the home tab */
+.exif {
+  display: grid;
+  gap: 4px;
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.88rem;
+}
+
+.exif div {
+  display: grid;
+  grid-template-columns: 11ch 1fr;
+  gap: 12px;
+}
+
+.exif dt {
+  color: var(--red);
+}
+
+.exif dd {
+  color: var(--muted);
+}
+
 .items,
 .list {
   list-style: none;
@@ -114,7 +219,7 @@ button:focus-visible {
 }
 
 .items {
-  gap: 12px;
+  gap: 14px;
   margin-top: 10px;
 }
 
@@ -123,13 +228,43 @@ button:focus-visible {
   color: var(--muted);
 }
 
+/* Project cards framed with viewfinder corners instead of a full border */
 .item {
-  padding: 12px;
-  border: 1px solid var(--border);
+  --corner: var(--border);
+  --len: 14px;
+  position: relative;
+  padding: 14px 16px;
+  background:
+    linear-gradient(var(--corner), var(--corner)) top left / var(--len) 1px,
+    linear-gradient(var(--corner), var(--corner)) top left / 1px var(--len),
+    linear-gradient(var(--corner), var(--corner)) top right / var(--len) 1px,
+    linear-gradient(var(--corner), var(--corner)) top right / 1px var(--len),
+    linear-gradient(var(--corner), var(--corner)) bottom left / var(--len) 1px,
+    linear-gradient(var(--corner), var(--corner)) bottom left / 1px var(--len),
+    linear-gradient(var(--corner), var(--corner)) bottom right / var(--len) 1px,
+    linear-gradient(var(--corner), var(--corner)) bottom right / 1px var(--len);
+  background-repeat: no-repeat;
+  transition: --len 200ms ease;
+}
+
+.item:hover,
+.item:focus-within {
+  --corner: var(--fg);
+  --len: 22px;
+}
+
+.item-frame {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 0.75rem;
+  color: var(--red);
+  opacity: 0.8;
 }
 
 .item-title {
   font-weight: 500;
+  padding-right: 9ch;
 }
 
 .item-meta {
@@ -149,6 +284,10 @@ button:focus-visible {
 }
 
 .footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
   margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
@@ -156,9 +295,9 @@ button:focus-visible {
   font-size: 0.9rem;
 }
 
-/* Robot that strolls along the bottom of the screen */
+/* Camera that strolls along the bottom of the screen */
 .walker {
-  --trip: 20s;
+  --trip: 22s;
   position: fixed;
   z-index: 10;
   left: 0;
@@ -169,14 +308,13 @@ button:focus-visible {
   background: none;
   border: 0;
   cursor: pointer;
-  opacity: 0.78;
+  opacity: 0.8;
   animation: walk var(--trip) linear infinite;
   transition: opacity 160ms ease;
 }
 
 .walker:hover,
-.walker:focus-visible,
-.walker.paused {
+.walker:focus-visible {
   opacity: 1;
 }
 
@@ -203,6 +341,11 @@ button:focus-visible {
 
 .walker .solid {
   fill: currentColor;
+}
+
+.walker .led {
+  fill: var(--red);
+  animation: blink 1.6s steps(1) infinite;
 }
 
 .walker .limb {
@@ -233,16 +376,49 @@ button:focus-visible {
 
 .walker:hover .walker-bubble,
 .walker:focus-visible .walker-bubble,
-.walker.paused .walker-bubble {
+.walker.snapped .walker-bubble {
   opacity: 1;
   transform: translate(-50%, 0);
 }
 
-.walker.paused,
-.walker.paused *,
+.walker:hover,
+.walker:hover *,
 .walker:focus-visible,
-.walker:focus-visible * {
+.walker:focus-visible *,
+.walker.snapped,
+.walker.snapped * {
   animation-play-state: paused;
+}
+
+@property --len {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 14px;
+}
+
+@keyframes register-red {
+  from { transform: translate(-7px, 3px); opacity: 1; }
+  to { transform: translate(0, 0); opacity: 0; }
+}
+
+@keyframes register-cyan {
+  from { transform: translate(6px, -3px); opacity: 1; }
+  to { transform: translate(0, 0); opacity: 0; }
+}
+
+@keyframes develop {
+  from { opacity: 0; filter: blur(3px) brightness(1.6); }
+  to { opacity: 1; filter: none; }
+}
+
+@keyframes flash {
+  0% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.25; }
 }
 
 @keyframes walk {
@@ -268,7 +444,17 @@ button:focus-visible {
   }
 
   .walker-bot,
-  .walker .limb {
+  .walker .limb,
+  .walker .led,
+  .tab::before,
+  .name::before,
+  .name::after,
+  .panel:not([hidden]) {
     animation: none;
+  }
+
+  .name::before,
+  .name::after {
+    opacity: 0;
   }
 }
