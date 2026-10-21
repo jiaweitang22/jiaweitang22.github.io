@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TimeLineElement from "../components/cv/TimeLine.astro";
+---
+
+<BaseLayout title="Resume" sideBarActiveItemID="cv">
+  <div class="mb-5">
+    <div class="text-3xl w-full font-bold">Profile</div>
+  </div>
+
+  <div class="mb-10 text-justify">
+    Software engineer at Samsara with a strong interest in computer vision, computational photography, and machine
+    learning.
+  </div>
+
+  <div class="mb-5">
+    <div class="text-3xl w-full font-bold">Experience</div>
+  </div>
+
+  <div class="time-line-container mb-10">
+    <TimeLineElement title="Software Engineer at Samsara" subtitle="Present" />
+  </div>
+
+  <div class="mb-5">
+    <div class="text-3xl w-full font-bold">Coursework</div>
+  </div>
+
+  <div class="time-line-container grid gap-4 mb-10">
+    <TimeLineElement title="CS 180: Computer Vision & Computational Photography" subtitle="Fall 2026">
+      Projects on camera perspective, image alignment, filtering and frequency-domain blending, flow models, and image
+      warping and mosaicing.
+    </TimeLineElement>
+  </div>
+
+  <div class="mb-5">
+    <div class="text-3xl w-full font-bold">Skills</div>
+  </div>
+
+  <ul class="list-disc md:columns-4 columns-2 mx-6">
+    <li>Python</li>
+    <li>PyTorch</li>
+    <li>NumPy</li>
+    <li>Computer Vision</li>
+    <li>Image Processing</li>
+    <li>Machine Learning</li>
+    <li>TypeScript</li>
+    <li>Git</li>
+  </ul>
+</BaseLayout>
