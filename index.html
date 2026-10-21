@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jiawei Tang</title>
+    <meta name="description" content="Jiawei Tang — projects in computer vision, computational photography, and machine learning." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div class="brand">
+          <div class="name">Jiawei Tang</div>
+          <div class="meta">computer vision · computational photography · ml</div>
+        </div>
+
+        <nav class="tabs" aria-label="Sections">
+          <button class="tab" type="button" data-tab="home" aria-selected="true">Home</button>
+          <button class="tab" type="button" data-tab="projects" aria-selected="false">Projects</button>
+          <button class="tab" type="button" data-tab="contact" aria-selected="false">Contact</button>
+        </nav>
+      </header>
+
+      <main class="content">
+        <section class="panel" data-panel="home">
+          <h1>Hi, I'm Jiawei!</h1>
+          <p>
+            Welcome to my website. I'm a computer science student interested in
+            computer vision, computational photography, and machine learning.
+            This is where I keep my project write-ups — from colorizing
+            century-old photographs to training flow models.
+          </p>
+          <p>
+            Take a look at my <a href="#projects" data-goto="projects">projects</a>,
+            or feel free to <a href="#contact" data-goto="contact">reach out</a>!
+          </p>
+        </section>
+
+        <section class="panel" data-panel="projects" hidden>
+          <h1>projects</h1>
+          <ul class="items">
+            <li class="item">
+              <div class="item-title">Fun with Flow Models</div>
+              <div class="item-meta">cs 180 · project 3 · python · pytorch · cuda</div>
+              <div class="item-links">
+                <a href="https://github.com/jiaweitang22/cs180-proj3" target="_blank" rel="noreferrer">code</a>
+                <span class="sep">/</span>
+                <a href="https://jiaweitang22.github.io/cs180-proj3/" target="_blank" rel="noreferrer">write-up</a>
+              </div>
+            </li>
+            <li class="item">
+              <div class="item-title">Fun with Filters and Frequencies</div>
+              <div class="item-meta">cs 180 · project 2 · convolutions · hybrid images · multiresolution blending</div>
+              <div class="item-links">
+                <a href="https://github.com/jiaweitang22/cs180-proj2" target="_blank" rel="noreferrer">code</a>
+                <span class="sep">/</span>
+                <a href="https://jiaweitang22.github.io/cs180-proj2/" target="_blank" rel="noreferrer">write-up</a>
+              </div>
+            </li>
+            <li class="item">
+              <div class="item-title">Images of the Russian Empire</div>
+              <div class="item-meta">cs 180 · project 1 · colorizing the prokudin-gorskii collection · image pyramids</div>
+              <div class="item-links">
+                <a href="https://github.com/jiaweitang22/cs180-proj1" target="_blank" rel="noreferrer">code</a>
+                <span class="sep">/</span>
+                <a href="https://jiaweitang22.github.io/cs180-proj1/" target="_blank" rel="noreferrer">write-up</a>
+              </div>
+            </li>
+            <li class="item">
+              <div class="item-title">Becoming Friends with Your Camera</div>
+              <div class="item-meta">cs 180 · project 0 · perspective · focal length · dolly zoom</div>
+              <div class="item-links">
+                <a href="https://github.com/jiaweitang22/cs180-proj0" target="_blank" rel="noreferrer">code</a>
+                <span class="sep">/</span>
+                <a href="https://jiaweitang22.github.io/cs180-proj0/" target="_blank" rel="noreferrer">write-up</a>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel" data-panel="contact" hidden>
+          <h1>contact</h1>
+          <ul class="list">
+            <li><a href="mailto:jiaweitang22@gmail.com">jiaweitang22@gmail.com</a></li>
+            <li>
+              <a href="https://github.com/jiaweitang22" target="_blank" rel="noreferrer">GitHub</a>
+            </li>
+          </ul>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div>&copy; <span id="year">2026</span> Jiawei Tang</div>
+      </footer>
+    </div>
+
+    <button class="walker" type="button" aria-label="Walking robot. Click to pause." aria-pressed="false">
+      <span class="walker-bubble" aria-hidden="true">beep boop!</span>
+      <svg class="walker-bot" viewBox="0 0 64 64" aria-hidden="true">
+        <path class="stroke" d="M32 17V10" />
+        <rect class="solid" x="29" y="6" width="6" height="6" />
+        <rect class="body" x="16" y="17" width="32" height="30" />
+        <rect class="stroke" x="21" y="22" width="22" height="14" />
+        <rect class="solid" x="25" y="26" width="4" height="4" />
+        <rect class="solid" x="35" y="26" width="4" height="4" />
+        <path class="stroke" d="M27 33H37" />
+        <path class="stroke limb" d="M16 27L9 34" />
+        <path class="stroke limb alt" d="M48 27L55 34" />
+        <path class="stroke limb alt" d="M25 47V56H19" />
+        <path class="stroke limb" d="M39 47V56H45" />
+      </svg>
+    </button>
+
+    <script src="script.js"></script>
+  </body>
+</html>
