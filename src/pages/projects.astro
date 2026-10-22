@@ -1,20 +1,66 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import HorizontalCard from "../components/HorizontalCard.astro";
-import { projects } from "../data/projects";
+import GalleryCard from "../components/GalleryCard.astro";
+import { projects, tagColor } from "../data/projects";
 ---
 
-<BaseLayout title="Projects" sideBarActiveItemID="projects">
-  <div>
-    <div class="text-3xl w-full font-bold mb-5">CS 180: Computer Vision &amp; Computational Photography</div>
+<BaseLayout title="Projects · Jiawei Tang" sideBarActiveItemID="projects" breadcrumb={["📸 Projects"]}>
+  <div class="page-icon emoji" aria-hidden="true">📸</div>
+  <h1 class="page-title">Projects</h1>
+  <p>
+    Write-ups from CS 180: Computer Vision &amp; Computational Photography at UC Berkeley. Each one opens the full
+    project page.
+  </p>
+
+  <input class="view-radio" type="radio" name="view" id="view-gallery" checked />
+  <input class="view-radio" type="radio" name="view" id="view-table" />
+
+  <div class="db-header">
+    <div class="db-title"><span aria-hidden="true">🗂️</span> CS 180</div>
+    <div class="db-views" role="group" aria-label="View">
+      <label class="db-view" for="view-gallery">▦ Gallery</label>
+      <label class="db-view" for="view-table">☰ Table</label>
+    </div>
   </div>
 
-  {
-    projects.map((project, i) => (
-      <>
-        <HorizontalCard {...project} />
-        {i < projects.length - 1 && <div class="divider my-0" />}
-      </>
-    ))
-  }
+  <div class="db-body-gallery">
+    <div class="gallery">
+      {projects.map((project) => <GalleryCard {...project} />)}
+    </div>
+  </div>
+
+  <div class="db-body-table">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Aa Name</th>
+            <th scope="col">Summary</th>
+            <th scope="col">Tags</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            projects.map((project) => (
+              <tr>
+                <td class="name-cell">
+                  <a href={project.url} target="_blank" rel="noreferrer">
+                    {project.title}
+                  </a>
+                </td>
+                <td>{project.desc}</td>
+                <td>
+                  <div class="tags-cell">
+                    {project.tags.map((tag) => (
+                      <span class:list={["tag", tagColor(tag)]}>{tag}</span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
 </BaseLayout>

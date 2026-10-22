@@ -3,4 +3,3 @@
 
 export const SITE_TITLE = 'Jiawei Tang';
 export const SITE_DESCRIPTION = "Jiawei Tang, software engineer at Samsara and UC Berkeley EECS '26. Projects in computer vision, computational photography, and machine learning.";
-export const TRANSITION_API = true

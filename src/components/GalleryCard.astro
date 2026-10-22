@@ -1,0 +1,18 @@
+---
+import { tagColor } from "../data/projects";
+
+const { title, img, desc, url, tags = [] } = Astro.props;
+---
+
+<a class="card" href={url} target="_blank" rel="noreferrer">
+  <div class="card-image">
+    <img src={img} alt="" loading="lazy" />
+  </div>
+  <div class="card-body">
+    <div class="card-title">{title}</div>
+    <div class="card-desc">{desc}</div>
+    <div class="card-tags">
+      {tags.map((tag) => <span class:list={["tag", tagColor(tag)]}>{tag}</span>)}
+    </div>
+  </div>
+</a>

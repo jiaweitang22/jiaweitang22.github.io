@@ -1,33 +1,53 @@
 export const projects = [
   {
     title: "Image Warping and Mosaicing",
+    tags: ["Project 4", "Homographies", "Panoramas"],
     img: "/projects/proj4.webp",
-    desc: "CS 180 Project 4. Recovering homographies from point correspondences, rectifying images, and warping and blending photos into panoramic mosaics.",
+    desc: "Recovering homographies from point correspondences, rectifying images, and warping and blending photos into panoramic mosaics.",
     url: "https://jiaweitang22.github.io/cs180-proj4/",
-    badge: "NEW",
   },
   {
     title: "Fun with Flow Models",
+    tags: ["Project 3", "Generative models"],
     img: "/projects/proj3.webp",
-    desc: "CS 180 Project 3. Exploring the power of flow models for image generation.",
+    desc: "Exploring the power of flow models for image generation.",
     url: "https://jiaweitang22.github.io/cs180-proj3/",
   },
   {
     title: "Fun with Filters and Frequencies",
+    tags: ["Project 2", "Filtering", "Blending"],
     img: "/projects/proj2.png",
-    desc: "CS 180 Project 2. Convolutions, hybrid images, and multiresolution blending.",
+    desc: "Convolutions, hybrid images, and multiresolution blending.",
     url: "https://jiaweitang22.github.io/cs180-proj2/",
   },
   {
     title: "Images of the Russian Empire",
+    tags: ["Project 1", "Alignment", "Image pyramids"],
     img: "/projects/proj1.jpg",
-    desc: "CS 180 Project 1. Colorizing the Prokudin-Gorskii photo collection by aligning glass-plate negatives with exhaustive search and image pyramids.",
+    desc: "Colorizing the Prokudin-Gorskii photo collection by aligning glass-plate negatives with exhaustive search and image pyramids.",
     url: "https://jiaweitang22.github.io/cs180-proj1/",
   },
   {
     title: "Becoming Friends with Your Camera",
+    tags: ["Project 0", "Photography"],
     img: "/projects/proj0.jpg",
-    desc: "CS 180 Project 0. An exploration of perspective, focal length, and the dolly zoom.",
+    desc: "An exploration of perspective, focal length, and the dolly zoom.",
     url: "https://jiaweitang22.github.io/cs180-proj0/",
   },
 ];
+
+// Notion-style colors for tag pills
+const TAG_COLORS: Record<string, string> = {
+  Homographies: "blue",
+  Panoramas: "green",
+  "Generative models": "purple",
+  Filtering: "orange",
+  Blending: "pink",
+  Alignment: "yellow",
+  "Image pyramids": "brown",
+  Photography: "red",
+};
+
+export function tagColor(tag: string) {
+  return TAG_COLORS[tag] ?? "gray";
+}

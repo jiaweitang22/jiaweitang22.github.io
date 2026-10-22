@@ -1,23 +1,42 @@
 ---
-import SideBarFooter from "./SideBarFooter.astro";
-import { Image } from "astro:assets";
-import SideBarMenu from "./SideBarMenu.astro";
 const { sideBarActiveItemID } = Astro.props;
+
+const pages = [
+  { id: "home", icon: "🏠", label: "Home", href: "/" },
+  { id: "projects", icon: "📸", label: "Projects", href: "/projects" },
+];
+
+const links = [
+  { icon: "📄", label: "CV", href: "/Jiawei_Tang_Resume.pdf" },
+  { icon: "🐙", label: "GitHub", href: "https://github.com/jiaweitang22" },
+  { icon: "💼", label: "LinkedIn", href: "https://www.linkedin.com/in/jiaweitang22" },
+  { icon: "✉️", label: "Email", href: "mailto:jiaweitang22@gmail.com" },
+];
 ---
 
-<div class="drawer-side z-40">
-  <label for="my-drawer" class="drawer-overlay"></label>
-  <aside class="px-2 pt-2 h-auto min-h-full w-[19rem] bg-base-200 text-base-content flex flex-col">
-    <div class="w-fit mx-auto mt-5 mb-6">
-      <a href="/">
-        <div class="avatar transition ease-in-out hover:scale-[102%] block m-auto">
-          <div class="w-[8.5rem]">
-            <Image class="mask mask-circle" format="webp" width={300} height={300} src="/profile.jpg" alt="Profile image" />
-          </div>
-        </div>
+<aside class="sidebar" aria-label="Site navigation">
+  <a class="workspace" href="/">
+    <img src="/profile.jpg" alt="" width="22" height="22" />
+    Jiawei Tang
+  </a>
+
+  {
+    pages.map((page) => (
+      <a class="nav-item" href={page.href} aria-current={page.id === sideBarActiveItemID ? "page" : undefined}>
+        <span class="nav-icon" aria-hidden="true">{page.icon}</span>
+        {page.label}
       </a>
-    </div>
-    <SideBarMenu sideBarActiveItemID={sideBarActiveItemID} />
-    <SideBarFooter />
-  </aside>
-</div>
+    ))
+  }
+
+  <div class="sidebar-section">Links</div>
+  {
+    links.map((link) => (
+      <a class="nav-item" href={link.href} target={link.href.startsWith("mailto:") ? undefined : "_blank"} rel="noreferrer">
+        <span class="nav-icon" aria-hidden="true">{link.icon}</span>
+        {link.label}
+        {!link.href.startsWith("mailto:") && <span class="nav-external" aria-hidden="true">↗</span>}
+      </a>
+    ))
+  }
+</aside>

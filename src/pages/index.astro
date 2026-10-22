@@ -1,39 +1,60 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import HorizontalCard from "../components/HorizontalCard.astro";
+import GalleryCard from "../components/GalleryCard.astro";
 import { projects } from "../data/projects";
 ---
 
 <BaseLayout sideBarActiveItemID="home">
-  <div class="pb-12 mt-5">
-    <div class="text-xl py-1">Hey there 👋</div>
-    <div class="text-5xl font-bold">I'm Jiawei Tang</div>
-    <div class="text-3xl pt-3 font-bold">Software Engineer @ Samsara</div>
-    <div class="text-xl pb-3 opacity-75">UC Berkeley EECS '26</div>
-    <div class="py-2">
-      <text class="text-lg">
-        Welcome to my website. I just graduated from the University of California, Berkeley with a bachelor's degree in
-        Electrical Engineering and Computer Sciences. Currently, I'm a software engineer at Samsara. Feel free to reach out!
-      </text>
+  <div class="cover" slot="cover">
+    <img src="/cover.jpg" alt="Sather Tower and Doe Library seen from Memorial Glade at UC Berkeley" />
+  </div>
+
+  <img class="page-icon" src="/profile.jpg" alt="Jiawei Tang" width="124" height="124" />
+  <h1 class="page-title">Jiawei Tang</h1>
+
+  <div class="properties">
+    <div class="property">
+      <div class="property-name"><span aria-hidden="true">💼</span> Role</div>
+      <div class="property-value">Software Engineer @ Samsara</div>
     </div>
-    <div class="mt-8 flex flex-wrap gap-3">
-      <a class="btn" href="https://www.linkedin.com/in/jiaweitang22" target="_blank">Let's connect!</a>
-      <a href="/Jiawei_Tang_Resume.pdf" target="_blank" class="btn btn-outline">CV</a>
-      <a href="https://github.com/jiaweitang22" target="_blank" class="btn btn-outline">GitHub</a>
+    <div class="property">
+      <div class="property-name"><span aria-hidden="true">🎓</span> Education</div>
+      <div class="property-value">
+        UC Berkeley <span class="tag blue">EECS</span><span class="tag yellow">Class of 2026</span>
+      </div>
+    </div>
+    <div class="property">
+      <div class="property-name"><span aria-hidden="true">🔗</span> Links</div>
+      <div class="property-value">
+        <a class="inline" href="/Jiawei_Tang_Resume.pdf" target="_blank">CV</a>
+        <a class="inline" href="https://github.com/jiaweitang22" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="inline" href="https://www.linkedin.com/in/jiaweitang22" target="_blank" rel="noreferrer">LinkedIn</a>
+        <a class="inline" href="mailto:jiaweitang22@gmail.com">Email</a>
+      </div>
     </div>
   </div>
 
-  <div>
-    <div class="text-3xl w-full font-bold mb-2">My latest projects {"</>"}</div>
+  <hr class="divider" />
+
+  <p>
+    Welcome to my website. I just graduated from the University of California, Berkeley with a bachelor's degree in
+    Electrical Engineering and Computer Sciences. Currently, I'm a software engineer at Samsara.
+  </p>
+
+  <div class="callout">
+    <span class="callout-icon" aria-hidden="true">👋</span>
+    <div>
+      Feel free to reach out! Find me on <a href="https://www.linkedin.com/in/jiaweitang22" target="_blank" rel="noreferrer"
+        >LinkedIn</a
+      > or say hi at <a href="mailto:jiaweitang22@gmail.com">jiaweitang22@gmail.com</a>.
+    </div>
   </div>
 
-  {
-    projects.slice(0, 3).map((project) => (
-      <>
-        <HorizontalCard {...project} />
-        <div class="divider my-0" />
-      </>
-    ))
-  }
-  <a href="/projects" class="btn btn-outline mt-4">See all projects</a>
+  <div class="db-header">
+    <div class="db-title"><span aria-hidden="true">📸</span> Latest projects</div>
+  </div>
+  <div class="gallery">
+    {projects.slice(0, 3).map((project) => <GalleryCard {...project} />)}
+  </div>
+  <a class="more-link" href="/projects">→ See all {projects.length} projects</a>
 </BaseLayout>
