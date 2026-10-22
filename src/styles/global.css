@@ -235,12 +235,12 @@ img {
 
 /* ---------- Page ---------- */
 
-/* The cover keeps the photo's own shape so the whole tower always shows */
+/* The cover spans the full width; its height follows the photo's shape
+   (2400x728) so the whole tower shows, capped at half the viewport height */
 .cover {
   position: relative;
-  aspect-ratio: 2400 / 728;
-  min-height: 150px;
-  max-height: 440px;
+  width: 100%;
+  height: clamp(150px, calc((100vw - var(--sidebar-width)) * 728 / 2400), 50vh);
   overflow: hidden;
 }
 
@@ -632,6 +632,10 @@ label:focus-visible {
 
   .property-name {
     flex-basis: 110px;
+  }
+
+  .cover {
+    height: max(150px, calc(100vw * 728 / 2400));
   }
 
   .cover-credit {
