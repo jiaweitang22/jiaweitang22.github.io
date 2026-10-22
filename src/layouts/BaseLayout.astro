@@ -51,8 +51,8 @@ const {
           </nav>
         </header>
 
-        <slot name="cover" />
         <main class:list={["page", { "no-cover": !Astro.slots.has("cover") }]}>
+          <slot name="cover" />
           <slot />
         </main>
       </div>
