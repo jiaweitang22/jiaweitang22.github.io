@@ -10,5 +10,5 @@ export const LINKS = [
   { icon: "cv", label: "CV", href: "/Jiawei_Tang_Resume.pdf" },
   { icon: "github", label: "GitHub", href: "https://github.com/jiaweitang22" },
   { icon: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/jiaweitang22" },
-  { icon: "mail", label: "Email", href: `mailto:${EMAIL}` },
+  { icon: "mail", label: "Email", href: `mailto:${EMAIL}`, copy: EMAIL },
 ];

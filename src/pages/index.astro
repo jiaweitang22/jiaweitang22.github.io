@@ -19,6 +19,14 @@ import { LINKS } from "../config";
     {
       LINKS.map((link) => {
         const external = !link.href.startsWith("mailto:");
+        if (link.copy) {
+          return (
+            <button class="link-pill" type="button" data-copy={link.copy} data-href={link.href} title={link.copy}>
+              <Icon name={link.icon} size={15} />
+              <span data-copy-label>{link.label}</span>
+            </button>
+          );
+        }
         return (
           <a class="link-pill" href={link.href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
             <Icon name={link.icon} size={15} />

@@ -11,11 +11,6 @@ const pages = [
 ---
 
 <aside class="sidebar" id="sidebar" aria-label="Site navigation">
-  <a class="workspace" href="/">
-    <img class="workspace-avatar" src="/profile.jpg" alt="" width="22" height="22" />
-    Jiawei Tang
-  </a>
-
   <nav class="nav-group">
     {
       pages.map((page) => (
@@ -32,6 +27,14 @@ const pages = [
     {
       LINKS.map((link) => {
         const external = !link.href.startsWith("mailto:");
+        if (link.copy) {
+          return (
+            <button class="nav-item" type="button" data-copy={link.copy} data-href={link.href} title={link.copy}>
+              <Icon name={link.icon} />
+              <span data-copy-label>{link.label}</span>
+            </button>
+          );
+        }
         return (
           <a class="nav-item" href={link.href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
             <Icon name={link.icon} />

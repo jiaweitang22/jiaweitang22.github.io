@@ -26,27 +26,23 @@ const {
       <div class="scrim" data-nav-close aria-hidden="true"></div>
 
       <div class="main">
-        <header class="topbar">
+        <header class:list={["topbar", { "topbar-empty": breadcrumb.length === 0 }]}>
           <button class="menu-button" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">
             <Icon name="menu" size={18} />
           </button>
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            {
-              breadcrumb.length === 0 ? (
-                <span class="crumb crumb-current" aria-current="page">Jiawei Tang</span>
-              ) : (
-                <>
-                  <a href="/">Jiawei Tang</a>
-                  {breadcrumb.map((crumb) => (
-                    <>
-                      <span class="slash" aria-hidden="true">/</span>
-                      <span class="crumb crumb-current" aria-current="page">{crumb}</span>
-                    </>
-                  ))}
-                </>
-              )
-            }
-          </nav>
+          {
+            breadcrumb.length > 0 && (
+              <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="/">Home</a>
+                {breadcrumb.map((crumb) => (
+                  <>
+                    <span class="slash" aria-hidden="true">/</span>
+                    <span class="crumb crumb-current" aria-current="page">{crumb}</span>
+                  </>
+                ))}
+              </nav>
+            )
+          }
         </header>
 
         <main class:list={["page", { "no-cover": !Astro.slots.has("cover") }]}>
@@ -68,6 +64,30 @@ const {
 
       button.addEventListener("click", () => setOpen(!app.classList.contains("nav-open")));
       document.querySelector("[data-nav-close]")!.addEventListener("click", () => setOpen(false));
+
+      // Copy the email address instead of relying on a mailto: handler being set up;
+      // fall back to mailto: if the clipboard isn't available
+      document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((el) => {
+        const label = el.querySelector("[data-copy-label]")!;
+        const original = label.textContent;
+        let timer: number | undefined;
+        el.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(el.dataset.copy!);
+          } catch {
+            window.location.href = el.dataset.href!;
+            return;
+          }
+          label.textContent = "Email copied";
+          el.dataset.copied = "";
+          clearTimeout(timer);
+          timer = window.setTimeout(() => {
+            label.textContent = original;
+            delete el.dataset.copied;
+          }, 2000);
+        });
+      });
+
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && app.classList.contains("nav-open")) {
           setOpen(false);
