@@ -1,10 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
 ---
 
 <BaseLayout title="404: Not Found" breadcrumb={["Page not found"]}>
-  <div class="page-icon emoji" aria-hidden="true">🏝</div>
-  <h1 class="page-title">This page couldn't be found</h1>
-  <p>It may have moved, or the link may be wrong.</p>
-  <a class="more-link" href="/">← Back to home</a>
+  <p class="eyebrow">404</p>
+  <h1 class="page-title">This page couldn’t be found</h1>
+  <p class="page-subtitle">It may have moved, or the link may be wrong.</p>
+  <a class="db-action back-link" href="/"><Icon name="arrow-left" size={14} /> Back to home</a>
 </BaseLayout>

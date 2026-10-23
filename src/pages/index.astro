@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import GalleryCard from "../components/GalleryCard.astro";
+import Icon from "../components/Icon.astro";
 import { projects } from "../data/projects";
+import { LINKS } from "../config";
 ---
 
 <BaseLayout sideBarActiveItemID="home">
@@ -11,50 +13,38 @@ import { projects } from "../data/projects";
 
   <img class="page-icon" src="/profile.jpg" alt="Jiawei Tang" width="124" height="124" />
   <h1 class="page-title">Jiawei Tang</h1>
+  <p class="page-subtitle">Software Engineer at Samsara · UC Berkeley EECS ’26</p>
 
-  <div class="properties">
-    <div class="property">
-      <div class="property-name"><span aria-hidden="true">💼</span> Role</div>
-      <div class="property-value">Software Engineer @ Samsara</div>
-    </div>
-    <div class="property">
-      <div class="property-name"><span aria-hidden="true">🎓</span> Education</div>
-      <div class="property-value">
-        UC Berkeley <span class="tag blue">EECS</span><span class="tag yellow">Class of 2026</span>
-      </div>
-    </div>
-    <div class="property">
-      <div class="property-name"><span aria-hidden="true">🔗</span> Links</div>
-      <div class="property-value">
-        <a class="inline" href="/Jiawei_Tang_Resume.pdf" target="_blank">CV</a>
-        <a class="inline" href="https://github.com/jiaweitang22" target="_blank" rel="noreferrer">GitHub</a>
-        <a class="inline" href="https://www.linkedin.com/in/jiaweitang22" target="_blank" rel="noreferrer">LinkedIn</a>
-        <a class="inline" href="mailto:jiaweitang@berkeley.edu">Email</a>
-      </div>
-    </div>
+  <div class="link-row">
+    {
+      LINKS.map((link) => {
+        const external = !link.href.startsWith("mailto:");
+        return (
+          <a class="link-pill" href={link.href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
+            <Icon name={link.icon} size={15} />
+            {link.label}
+          </a>
+        );
+      })
+    }
   </div>
 
   <hr class="divider" />
 
   <p>
-    Welcome to my website. I just graduated from the University of California, Berkeley with a bachelor's degree in
-    Electrical Engineering and Computer Sciences. Currently, I'm a software engineer at Samsara.
+    I recently graduated from the University of California, Berkeley with a bachelor’s degree in Electrical
+    Engineering and Computer Sciences, and I’m now a software engineer at Samsara. Below is a selection of my work in
+    computer vision and computational photography.
   </p>
 
-  <div class="callout">
-    <span class="callout-icon" aria-hidden="true">👋</span>
-    <div>
-      Feel free to reach out! Find me on <a href="https://www.linkedin.com/in/jiaweitang22" target="_blank" rel="noreferrer"
-        >LinkedIn</a
-      > or say hi at <a href="mailto:jiaweitang@berkeley.edu">jiaweitang@berkeley.edu</a>.
-    </div>
-  </div>
-
   <div class="db-header">
-    <div class="db-title"><span aria-hidden="true">📸</span> Latest projects</div>
+    <h2 class="db-title">Latest projects</h2>
+    <a class="db-action" href="/projects">
+      View all {projects.length}
+      <Icon name="arrow-right" size={14} />
+    </a>
   </div>
-  <div class="gallery">
+  <div class="gallery gallery-3">
     {projects.slice(0, 3).map((project) => <GalleryCard {...project} />)}
   </div>
-  <a class="more-link" href="/projects">→ See all {projects.length} projects</a>
 </BaseLayout>

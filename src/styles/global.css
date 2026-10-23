@@ -1,4 +1,4 @@
-/* Notion-style theme */
+/* Notion-inspired theme */
 :root {
   --bg: #ffffff;
   --sidebar-bg: #f7f7f5;
@@ -8,8 +8,9 @@
   --hover: rgba(55, 53, 47, 0.08);
   --active: rgba(55, 53, 47, 0.12);
   --divider: rgba(55, 53, 47, 0.09);
-  --callout-bg: #f1f1ef;
-  --card-shadow: rgba(15, 15, 15, 0.1) 0 0 0 1px, rgba(15, 15, 15, 0.1) 0 2px 4px;
+  --card-shadow: rgba(15, 15, 15, 0.08) 0 0 0 1px, rgba(15, 15, 15, 0.06) 0 2px 4px;
+  --card-shadow-hover: rgba(15, 15, 15, 0.1) 0 0 0 1px, rgba(15, 15, 15, 0.1) 0 8px 20px;
+  --focus: #2383e2;
   --link-underline: rgba(55, 53, 47, 0.4);
 
   --tag-gray: #e3e2e0;
@@ -37,8 +38,8 @@
     --hover: rgba(255, 255, 255, 0.055);
     --active: rgba(255, 255, 255, 0.09);
     --divider: rgba(255, 255, 255, 0.094);
-    --callout-bg: #252525;
     --card-shadow: rgba(255, 255, 255, 0.094) 0 0 0 1px;
+    --card-shadow-hover: rgba(255, 255, 255, 0.16) 0 0 0 1px, rgba(0, 0, 0, 0.4) 0 8px 20px;
     --link-underline: rgba(255, 255, 255, 0.4);
 
     --tag-gray: #373737;
@@ -90,10 +91,6 @@ img {
   min-height: 100vh;
 }
 
-.nav-toggle {
-  display: none;
-}
-
 .sidebar {
   position: sticky;
   top: 0;
@@ -115,18 +112,24 @@ img {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   border-radius: 6px;
   color: var(--text);
   font-weight: 500;
   text-decoration: none;
 }
 
-.workspace-icon {
+.workspace-avatar {
   width: 22px;
-  font-size: 18px;
-  line-height: 22px;
-  text-align: center;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .sidebar-section {
@@ -147,6 +150,12 @@ img {
   color: var(--text-muted);
 }
 
+.nav-item .icon {
+  flex: 0 0 16px;
+  margin: 0 2px;
+  opacity: 0.8;
+}
+
 .workspace:hover,
 .nav-item:hover {
   background: var(--hover);
@@ -158,16 +167,21 @@ img {
   font-weight: 500;
 }
 
-.nav-icon {
-  width: 20px;
-  text-align: center;
-  flex: 0 0 20px;
+.nav-external {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 120ms ease;
 }
 
-.nav-external {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--text-faint);
+.nav-item:hover .nav-external {
+  opacity: 1;
+}
+
+.nav-item .nav-external .icon {
+  flex-basis: 12px;
+  margin: 0;
 }
 
 .main {
@@ -196,7 +210,9 @@ img {
   justify-content: center;
   width: 28px;
   height: 28px;
+  border: 0;
   border-radius: 6px;
+  background: none;
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -272,68 +288,65 @@ img {
   border: 4px solid var(--bg);
 }
 
-.page-icon.emoji {
-  margin-top: 24px;
-  margin-left: 0;
-  width: auto;
-  height: auto;
-  border: 0;
-  font-size: 78px;
-  line-height: 1.1;
-}
-
 .page.no-cover {
-  padding-top: 40px;
+  padding-top: 64px;
 }
 
 .page-title {
-  margin: 16px 0 4px;
+  margin: 16px 0 6px;
   font-size: 40px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
 
-.properties {
-  margin: 12px 0 8px;
-  font-size: 14px;
+.page.no-cover .page-title {
+  margin-top: 0;
 }
 
-.property {
-  display: flex;
-  align-items: flex-start;
-  min-height: 34px;
-  padding: 4px 0;
-}
-
-.property-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 0 0 160px;
-  padding: 2px 6px;
+.page-subtitle {
+  font-size: 17px;
   color: var(--text-muted);
 }
 
-.property-value {
-  flex: 1;
-  min-width: 0;
-  padding: 2px 6px;
+.eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.link-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.link-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: var(--card-shadow);
+  transition: background 120ms ease;
+}
+
+.link-pill:hover {
+  background: var(--hover);
 }
 
 .divider {
   height: 1px;
-  margin: 16px 0;
+  margin: 24px 0 16px;
   background: var(--divider);
   border: 0;
-}
-
-.block {
-  margin: 2px 0;
-  padding: 3px 2px;
 }
 
 .page p {
@@ -351,28 +364,6 @@ img {
 .page a.inline:hover,
 .page p a:hover {
   opacity: 1;
-}
-
-h2.heading {
-  margin: 32px 0 4px;
-  padding: 3px 2px;
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.callout {
-  display: flex;
-  gap: 10px;
-  margin: 8px 0;
-  padding: 16px 16px 16px 12px;
-  border-radius: 4px;
-  background: var(--callout-bg);
-}
-
-.callout-icon {
-  font-size: 20px;
-  line-height: 1.2;
 }
 
 .tag {
@@ -404,8 +395,8 @@ h2.heading {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 28px;
-  padding-bottom: 6px;
+  margin-top: 36px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--divider);
 }
 
@@ -413,8 +404,29 @@ h2.heading {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
+}
+
+.db-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.db-action:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.back-link {
+  margin-top: 20px;
+  margin-left: -8px;
 }
 
 .db-views {
@@ -454,7 +466,7 @@ h2.heading {
 
 #view-gallery:focus-visible ~ .db-header label[for="view-gallery"],
 #view-table:focus-visible ~ .db-header label[for="view-table"] {
-  outline: 2px solid #2383e2;
+  outline: 2px solid var(--focus);
 }
 
 .db-body-table {
@@ -471,9 +483,16 @@ h2.heading {
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
   padding-top: 16px;
+}
+
+/* Home preview: one row of three once there's room, so no card is left alone */
+@media (min-width: 600px) {
+  .gallery-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .card {
@@ -485,15 +504,16 @@ h2.heading {
   text-decoration: none;
   color: inherit;
   background: var(--bg);
-  transition: background 120ms ease;
+  transition: box-shadow 160ms ease, transform 160ms ease;
 }
 
 .card:hover {
-  background: var(--hover);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 
 .card-image {
-  height: 150px;
+  aspect-ratio: 16 / 10;
   border-bottom: 1px solid var(--divider);
   overflow: hidden;
 }
@@ -502,29 +522,39 @@ h2.heading {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.card:hover .card-image img {
+  transform: scale(1.03);
 }
 
 .card-body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 10px 12px;
+  flex: 1;
+  padding: 12px 12px 14px;
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.35;
 }
 
-.card-desc {
-  font-size: 12px;
+.page .card-desc {
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
   color: var(--text-muted);
   line-height: 1.45;
 }
 
 .card-tags {
   display: flex;
+  margin-top: auto;
+  padding-top: 4px;
   flex-wrap: wrap;
   gap: 4px;
 }
@@ -545,7 +575,8 @@ h2.heading {
 
 .table th {
   padding: 8px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
   text-align: left;
   color: var(--text-muted);
   border-bottom: 1px solid var(--divider);
@@ -574,23 +605,10 @@ h2.heading {
   gap: 4px;
 }
 
-.more-link {
-  display: inline-flex;
-  margin-top: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  color: var(--text-muted);
-  text-decoration: none;
-}
-
-.more-link:hover {
-  background: var(--hover);
-}
-
 a:focus-visible,
+button:focus-visible,
 label:focus-visible {
-  outline: 2px solid #2383e2;
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -601,7 +619,7 @@ label:focus-visible {
   display: none;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .page {
     padding: 0 16px 80px;
   }
@@ -615,10 +633,6 @@ label:focus-visible {
 
   .page-title {
     font-size: 32px;
-  }
-
-  .property-name {
-    flex-basis: 110px;
   }
 
   .cover {
@@ -636,15 +650,17 @@ label:focus-visible {
     left: 0;
     top: 0;
     transform: translateX(-100%);
-    transition: transform 180ms ease;
+    visibility: hidden;
+    transition: transform 180ms ease, visibility 180ms;
     box-shadow: rgba(15, 15, 15, 0.1) 0 0 0 1px, rgba(15, 15, 15, 0.2) 0 3px 6px;
   }
 
-  .nav-toggle:checked ~ .sidebar {
+  .app.nav-open .sidebar {
     transform: none;
+    visibility: visible;
   }
 
-  .nav-toggle:checked ~ .scrim {
+  .app.nav-open .scrim {
     display: block;
     position: fixed;
     inset: 0;
@@ -655,7 +671,15 @@ label:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
-  .card {
+  .card,
+  .card-image img,
+  .link-pill,
+  .nav-external {
     transition: none;
+  }
+
+  .card:hover,
+  .card:hover .card-image img {
+    transform: none;
   }
 }

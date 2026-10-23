@@ -1,13 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import GalleryCard from "../components/GalleryCard.astro";
+import Icon from "../components/Icon.astro";
 import { projects, tagColor } from "../data/projects";
 ---
 
-<BaseLayout title="Projects · Jiawei Tang" sideBarActiveItemID="projects" breadcrumb={["📸 Projects"]}>
-  <div class="page-icon emoji" aria-hidden="true">📸</div>
+<BaseLayout title="Projects · Jiawei Tang" sideBarActiveItemID="projects" breadcrumb={["Projects"]}>
   <h1 class="page-title">Projects</h1>
-  <p>
+  <p class="page-subtitle">
     Write-ups from CS 180: Computer Vision &amp; Computational Photography at UC Berkeley. Each one opens the full
     project page.
   </p>
@@ -16,10 +16,10 @@ import { projects, tagColor } from "../data/projects";
   <input class="view-radio" type="radio" name="view" id="view-table" />
 
   <div class="db-header">
-    <div class="db-title"><span aria-hidden="true">🗂️</span> CS 180</div>
+    <h2 class="db-title">CS 180</h2>
     <div class="db-views" role="group" aria-label="View">
-      <label class="db-view" for="view-gallery">▦ Gallery</label>
-      <label class="db-view" for="view-table">☰ Table</label>
+      <label class="db-view" for="view-gallery"><Icon name="projects" size={14} /> Gallery</label>
+      <label class="db-view" for="view-table"><Icon name="list" size={14} /> Table</label>
     </div>
   </div>
 
@@ -34,9 +34,9 @@ import { projects, tagColor } from "../data/projects";
       <table class="table">
         <thead>
           <tr>
-            <th scope="col">Aa Name</th>
+            <th scope="col">Project</th>
             <th scope="col">Summary</th>
-            <th scope="col">Tags</th>
+            <th scope="col">Topics</th>
           </tr>
         </thead>
         <tbody>

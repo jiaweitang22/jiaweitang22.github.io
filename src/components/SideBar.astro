@@ -1,42 +1,49 @@
 ---
+import Icon from "./Icon.astro";
+import { LINKS } from "../config";
+
 const { sideBarActiveItemID } = Astro.props;
 
 const pages = [
-  { id: "home", icon: "🏠", label: "Home", href: "/" },
-  { id: "projects", icon: "📸", label: "Projects", href: "/projects" },
-];
-
-const links = [
-  { icon: "📄", label: "CV", href: "/Jiawei_Tang_Resume.pdf" },
-  { icon: "🐙", label: "GitHub", href: "https://github.com/jiaweitang22" },
-  { icon: "💼", label: "LinkedIn", href: "https://www.linkedin.com/in/jiaweitang22" },
-  { icon: "✉️", label: "Email", href: "mailto:jiaweitang@berkeley.edu" },
+  { id: "home", icon: "home", label: "Home", href: "/" },
+  { id: "projects", icon: "projects", label: "Projects", href: "/projects" },
 ];
 ---
 
-<aside class="sidebar" aria-label="Site navigation">
+<aside class="sidebar" id="sidebar" aria-label="Site navigation">
   <a class="workspace" href="/">
-    <span class="workspace-icon" aria-hidden="true">🧑‍💻</span>
+    <img class="workspace-avatar" src="/profile.jpg" alt="" width="22" height="22" />
     Jiawei Tang
   </a>
 
-  {
-    pages.map((page) => (
-      <a class="nav-item" href={page.href} aria-current={page.id === sideBarActiveItemID ? "page" : undefined}>
-        <span class="nav-icon" aria-hidden="true">{page.icon}</span>
-        {page.label}
-      </a>
-    ))
-  }
+  <nav class="nav-group">
+    {
+      pages.map((page) => (
+        <a class="nav-item" href={page.href} aria-current={page.id === sideBarActiveItemID ? "page" : undefined}>
+          <Icon name={page.icon} />
+          {page.label}
+        </a>
+      ))
+    }
+  </nav>
 
   <div class="sidebar-section">Links</div>
-  {
-    links.map((link) => (
-      <a class="nav-item" href={link.href} target={link.href.startsWith("mailto:") ? undefined : "_blank"} rel="noreferrer">
-        <span class="nav-icon" aria-hidden="true">{link.icon}</span>
-        {link.label}
-        {!link.href.startsWith("mailto:") && <span class="nav-external" aria-hidden="true">↗</span>}
-      </a>
-    ))
-  }
+  <nav class="nav-group" aria-label="External links">
+    {
+      LINKS.map((link) => {
+        const external = !link.href.startsWith("mailto:");
+        return (
+          <a class="nav-item" href={link.href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
+            <Icon name={link.icon} />
+            {link.label}
+            {external && (
+              <span class="nav-external">
+                <Icon name="external" size={12} />
+              </span>
+            )}
+          </a>
+        );
+      })
+    }
+  </nav>
 </aside>
