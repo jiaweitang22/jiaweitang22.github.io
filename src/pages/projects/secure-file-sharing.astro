@@ -66,19 +66,12 @@ const api = [
 
   <h2 class="wu-h2">Overview</h2>
   <p>
-    This was the design project for CS 161. We wrote a client library that stores files on a
-    server we had to treat as hostile. The server can read, rewrite or delete anything it holds, and it sees every
-    request. The library still has to offer an ordinary file API: log in, store, load, append, share and revoke.
-    Nothing on the server may reveal file contents or names, and if the server changes anything, the client has to
-    return an error instead of bad data.
+    The server can read, modify or delete anything it stores and sees every request. The library still provides a normal file API (log in, store, load, append, share, revoke), reveals nothing about file contents or names, and returns an error instead of bad data whenever the server tampers with anything.
   </p>
 
   <h2 class="wu-h2">Setting</h2>
   <p>
-    The client library is the only code we trust. It keeps no state between calls, because a user can be logged in on
-    several devices and each one has to see the latest data. It talks to two services. Datastore maps UUIDs to bytes,
-    holds all the real data, and belongs to the attacker. Keystore maps names to public keys. It is trusted and
-    immutable, but it holds only public keys, and each user gets a constant number of entries.
+    The client library is the only trusted code. It keeps no state between calls, since a user may be logged in on several devices that must all see the latest data. It talks to two services: Datastore, an attacker-controlled map from UUIDs to bytes that holds all data, and Keystore, a trusted, immutable map from names to public keys with a fixed number of entries per user.
   </p>
 
   <figure class="wu-fig wu-arch">
@@ -104,19 +97,18 @@ const api = [
   </figure>
 
   <h2 class="wu-h2">Threat model</h2>
-  <p>The spec defines two attackers who don't work together.</p>
+  <p>
+    The spec defines two attackers who don't collude.
+  </p>
 
   <h3 class="wu-h3">The Datastore</h3>
   <p>
-    It can read, change, add and delete entries between any two calls. It can snapshot the store before and after a
-    call to see what changed. It knows which user called which function, and it has our source code.
+    Can read, modify, add and delete entries between calls, diff snapshots to see what each call changed, see which user called which function, and read the source code.
   </p>
 
-  <h3 class="wu-h3">A revoked user</h3>
+  <h3 class="wu-h3">The revoked user</h3>
   <p>
-    They once had real access and may have saved anything they saw. After revocation they can run modified client code
-    and read or write Datastore directly. They must not learn anything written afterwards, and any change they make has
-    to be detected.
+    May have saved anything seen before revocation, and can run modified client code to read or write Datastore directly. Must not learn later contents, and any change must be detected.
   </p>
 
   <div class="table-wrap">
@@ -130,8 +122,7 @@ const api = [
   </div>
 
   <p>
-    The demo shows the behavior the spec asks for. The right side is the store as the attacker sees it. Tamper with it,
-    then load the file as Alice. She gets either the correct file or an error.
+    Tamper with the store on the right, then load the file. The client returns either the correct file or an error.
   </p>
 
   <figure class="wu-fig wu-sim" id="wu-sim">
@@ -154,11 +145,13 @@ const api = [
         <button class="link-pill wu-btn" type="button" data-sim-reset>Reset</button>
       </div>
     </div>
-    <figcaption>Illustration only. The entries are random bytes and don't reflect our storage layout.</figcaption>
+    <figcaption>Illustration only. Entries are random bytes, not the real storage layout.</figcaption>
   </figure>
 
   <h2 class="wu-h2">API</h2>
-  <p>The library exposes eight functions. For each one the spec defines when it must succeed and when it must return an error.</p>
+  <p>
+    Eight functions, each with defined success and error conditions.
+  </p>
 
   <div class="table-wrap">
     <table class="table wu-table wu-api">
@@ -182,11 +175,7 @@ const api = [
 
   <h2 class="wu-h2">Sharing and revocation</h2>
   <p>
-    Any user with access to a file can share it, so the people with access form a tree with the owner at the root.
-    Everyone works on the same copy under a filename of their own choosing, and a change by one user shows up on
-    everyone else's next load. Only the owner can revoke. Revoking a user also removes everyone they shared with, and
-    nobody else should notice. This was the hardest requirement to meet, because a revoked user keeps whatever they saw
-    before and is free to bypass the client.
+    Anyone with access can share a file, so access forms a tree rooted at the owner. All users work on one copy, each under their own filename, and see each other's changes on the next load. Only the owner can revoke. Revoking a user also removes everyone they shared with, without affecting anyone else. This is the hardest requirement, since a revoked user keeps everything they saw and can bypass the client.
   </p>
 
   <figure class="wu-fig wu-tree" id="wu-tree">
@@ -239,11 +228,7 @@ const api = [
 
   <h2 class="wu-h2">Append cost</h2>
   <p>
-    The spec limits the bandwidth of an append. It may grow with the size of the appended data, but not with the size
-    of the file or the number of earlier appends. To check ours, I grew a file from 2 KB to 1 MB in 1 KB appends and
-    recorded the bytes moved using the course's bandwidth counter. The append cost was the same at every size. Loading
-    the 1 MB file cost 425 times as much as loading the 2 KB one, which is expected because a load fetches the whole
-    file.
+    Append bandwidth may grow with the size of the appended data, but not with the file size or the number of earlier appends. In a benchmark that grows a file from 2 KB to 1 MB in 1 KB appends, measured with the course's bandwidth counter, append cost stays constant while loading the whole file grows 425×.
   </p>
 
   <figure class="wu-fig wu-chart-fig">
@@ -262,19 +247,13 @@ const api = [
 
   <h2 class="wu-h2">What I learned</h2>
   <p>
-    The course supplies the primitives, and each one promises something narrow. CTR-mode encryption hides data but
-    doesn't stop someone flipping bits in it. An HMAC shows data wasn't changed, but only to someone holding the key. A
-    signature can be checked by anyone, but it is worth only as much as the link between the public key and the
-    username. Most of the work was making sure no part of the design leaned on a primitive for something it doesn't
-    provide.
+    Each primitive guarantees something narrow. CTR-mode encryption hides data but doesn't prevent bit flips. An HMAC detects changes, but only for key holders. A signature is publicly verifiable, but only as trustworthy as the binding between key and username. Most of the work was making sure no part of the design relied on a primitive for more than it provides.
   </p>
   <p>
-    Writing the threat model down before designing anything was the most useful step. Once we had listed what each
-    attacker could do, vague worries became specific cases to check the design against.
+    Writing down the threat model first turned vague concerns into specific cases to check the design against.
   </p>
   <p>
-    Having no local state shaped the design as much as any security requirement. Nothing can be assumed from an earlier
-    call, so every call has to verify what it reads from storage before using it.
+    Statelessness shaped the design as much as any security requirement. Nothing carries over between calls, so every read from storage has to be verified before use.
   </p>
 
   <a class="db-action back-link wu-back" href="/projects"><Icon name="arrow-left" size={14} /> All projects</a>
