@@ -535,6 +535,12 @@ img {
   padding: 12px 12px 14px;
 }
 
+.card-course {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
 .card-title {
   font-size: 15px;
   font-weight: 600;
@@ -595,6 +601,11 @@ img {
   font-weight: 500;
   text-decoration: none;
   border-bottom: 1px solid var(--link-underline);
+}
+
+.table .course-cell {
+  white-space: nowrap;
+  color: var(--text-muted);
 }
 
 .table .tags-cell {

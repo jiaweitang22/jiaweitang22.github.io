@@ -37,7 +37,11 @@ const {
                 {breadcrumb.map((crumb) => (
                   <>
                     <span class="slash" aria-hidden="true">/</span>
-                    <span class="crumb crumb-current" aria-current="page">{crumb}</span>
+                    {typeof crumb === "string" ? (
+                      <span class="crumb crumb-current" aria-current="page">{crumb}</span>
+                    ) : (
+                      <a href={crumb.href}>{crumb.label}</a>
+                    )}
                   </>
                 ))}
               </nav>

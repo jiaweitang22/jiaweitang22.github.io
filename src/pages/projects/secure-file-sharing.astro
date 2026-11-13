@@ -1,0 +1,942 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Icon from "../../components/Icon.astro";
+
+const title = "Secure File Sharing System";
+const description = "A Go client library for storing and sharing files on a server that is assumed to be malicious.";
+
+const api = [
+  {
+    group: "Users",
+    fns: [
+      { sig: "InitUser(username, password)", desc: "Create an account. Usernames are unique and case-sensitive, and any password is valid, including an empty one." },
+      { sig: "GetUser(username, password)", desc: "Log in from any device. Fails on wrong credentials or if the user's stored data was tampered with." },
+    ],
+  },
+  {
+    group: "Files",
+    fns: [
+      { sig: "StoreFile(filename, content)", desc: "Create or overwrite a file in the caller's own namespace." },
+      { sig: "LoadFile(filename)", desc: "Return the latest contents, or an error if anything the file depends on was modified." },
+      { sig: "AppendToFile(filename, content)", desc: "Add bytes to the end of a file, within a bandwidth limit." },
+    ],
+  },
+  {
+    group: "Sharing",
+    fns: [
+      { sig: "CreateInvitation(filename, recipient)", desc: "Share a file. Anyone with access can do this, and the recipient must be able to verify the sender." },
+      { sig: "AcceptInvitation(sender, invitation, filename)", desc: "Add a shared file to your namespace under a name you choose." },
+      { sig: "RevokeAccess(filename, recipient)", desc: "Owner only. Removes the recipient and everyone they shared with." },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title={`${title} · Jiawei Tang`}
+  description={description}
+  image="/projects/cs161-proj2.svg"
+  sideBarActiveItemID="projects"
+  breadcrumb={[{ label: "Projects", href: "/projects" }, title]}
+>
+  <div class="cover wu-hero" slot="cover" aria-hidden="true">
+    <div class="wu-hex" id="wu-hex"></div>
+    <div class="wu-hero-fade"></div>
+  </div>
+
+  <div class="wu-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+      <path d="M12 14.5v2.5" />
+    </svg>
+  </div>
+
+  <h1 class="page-title">{title}</h1>
+  <p class="page-subtitle">{description}</p>
+
+  <dl class="wu-props">
+    <div><dt>Course</dt><dd>CS 161: Computer Security, UC Berkeley</dd></div>
+    <div><dt>Term</dt><dd>Spring 2025</dd></div>
+    <div><dt>Language</dt><dd>Go</dd></div>
+    <div><dt>Topics</dt><dd class="wu-tags"><span class="tag blue">Cryptography</span><span class="tag red">Security</span></dd></div>
+  </dl>
+
+  <hr class="divider" />
+
+  <h2 class="wu-h2">Overview</h2>
+  <p>
+    This was the design project for CS 161. We wrote a client library that stores files on a
+    server we had to treat as hostile. The server can read, rewrite or delete anything it holds, and it sees every
+    request. The library still has to offer an ordinary file API: log in, store, load, append, share and revoke.
+    Nothing on the server may reveal file contents or names, and if the server changes anything, the client has to
+    return an error instead of bad data.
+  </p>
+
+  <h2 class="wu-h2">Setting</h2>
+  <p>
+    The client library is the only code we trust. It keeps no state between calls, because a user can be logged in on
+    several devices and each one has to see the latest data. It talks to two services. Datastore maps UUIDs to bytes,
+    holds all the real data, and belongs to the attacker. Keystore maps names to public keys. It is trusted and
+    immutable, but it holds only public keys, and each user gets a constant number of entries.
+  </p>
+
+  <figure class="wu-fig wu-arch">
+    <div class="wu-arch-client">
+      <div class="wu-node">
+        <div class="wu-node-title">Client library</div>
+        <div class="wu-node-sub">One copy per device, no local state</div>
+      </div>
+    </div>
+    <div class="wu-arch-link" aria-hidden="true"></div>
+    <div class="wu-arch-services">
+      <div class="wu-node">
+        <div class="wu-node-head"><span class="wu-node-title">Datastore</span><span class="tag red">untrusted</span></div>
+        <code class="wu-node-sub">UUID → bytes</code>
+        <div class="wu-node-sub">All file and user data. Readable and writable by the attacker.</div>
+      </div>
+      <div class="wu-node">
+        <div class="wu-node-head"><span class="wu-node-title">Keystore</span><span class="tag green">trusted</span></div>
+        <code class="wu-node-sub">name → public key</code>
+        <div class="wu-node-sub">Public keys only. Entries can't be changed once written.</div>
+      </div>
+    </div>
+  </figure>
+
+  <h2 class="wu-h2">Threat model</h2>
+  <p>The spec defines two attackers who don't work together.</p>
+
+  <h3 class="wu-h3">The Datastore</h3>
+  <p>
+    It can read, change, add and delete entries between any two calls. It can snapshot the store before and after a
+    call to see what changed. It knows which user called which function, and it has our source code.
+  </p>
+
+  <h3 class="wu-h3">A revoked user</h3>
+  <p>
+    They once had real access and may have saved anything they saw. After revocation they can run modified client code
+    and read or write Datastore directly. They must not learn anything written afterwards, and any change they make has
+    to be detected.
+  </p>
+
+  <div class="table-wrap">
+    <table class="table wu-table">
+      <tbody>
+        <tr><th scope="row">Kept secret</th><td>File contents, filenames, filename lengths, keys</td></tr>
+        <tr><th scope="row">Allowed to leak</th><td>Usernames, file sizes, the number of users and files</td></tr>
+        <tr><th scope="row">Must be detected</th><td>Any modification, deletion or substitution of data the client relies on</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    The demo shows the behavior the spec asks for. The right side is the store as the attacker sees it. Tamper with it,
+    then load the file as Alice. She gets either the correct file or an error.
+  </p>
+
+  <figure class="wu-fig wu-sim" id="wu-sim">
+    <div class="wu-sim-pane">
+      <div class="wu-label">Alice's client</div>
+      <div class="wu-file">
+        <code class="wu-file-name">notes.txt</code>
+        <div class="wu-file-body" data-sim-body>Meeting moved to Thursday.</div>
+      </div>
+      <button class="link-pill wu-btn" type="button" data-sim-load><code>LoadFile("notes.txt")</code></button>
+      <div class="wu-result" data-sim-result role="status" aria-live="polite"></div>
+    </div>
+    <div class="wu-sim-pane">
+      <div class="wu-label">Datastore, as the attacker sees it</div>
+      <ol class="wu-entries" data-sim-entries></ol>
+      <div class="wu-actions">
+        <button class="link-pill wu-btn" type="button" data-sim-attack="flip">Flip a bit</button>
+        <button class="link-pill wu-btn" type="button" data-sim-attack="swap">Swap two entries</button>
+        <button class="link-pill wu-btn" type="button" data-sim-attack="delete">Delete an entry</button>
+        <button class="link-pill wu-btn" type="button" data-sim-reset>Reset</button>
+      </div>
+    </div>
+    <figcaption>Illustration only. The entries are random bytes and don't reflect our storage layout.</figcaption>
+  </figure>
+
+  <h2 class="wu-h2">API</h2>
+  <p>The library exposes eight functions. For each one the spec defines when it must succeed and when it must return an error.</p>
+
+  <div class="table-wrap">
+    <table class="table wu-table wu-api">
+      <tbody>
+        {
+          api.map((g) => (
+            <>
+              <tr class="wu-api-group"><th colspan="2" scope="colgroup">{g.group}</th></tr>
+              {g.fns.map((f) => (
+                <tr>
+                  <td><code>{f.sig}</code></td>
+                  <td>{f.desc}</td>
+                </tr>
+              ))}
+            </>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="wu-h2">Sharing and revocation</h2>
+  <p>
+    Any user with access to a file can share it, so the people with access form a tree with the owner at the root.
+    Everyone works on the same copy under a filename of their own choosing, and a change by one user shows up on
+    everyone else's next load. Only the owner can revoke. Revoking a user also removes everyone they shared with, and
+    nobody else should notice. This was the hardest requirement to meet, because a revoked user keeps whatever they saw
+    before and is free to bypass the client.
+  </p>
+
+  <figure class="wu-fig wu-tree" id="wu-tree">
+    <svg class="wu-tree-svg" viewBox="78 18 444 264" role="img" aria-labelledby="wu-tree-caption">
+      <g class="wu-edges">
+        <path data-edge="bob" d="M300 62 L150 150" />
+        <path data-edge="doris" d="M300 62 L450 150" />
+        <path data-edge="charles" d="M150 150 L150 240" />
+        <path data-edge="eve" d="M450 150 L450 240" />
+      </g>
+      <g class="wu-nodes">
+        <g data-node="alice" transform="translate(300 52)">
+          <rect x="-62" y="-26" width="124" height="52" rx="6" />
+          <text class="wu-n-name" y="-3">Alice (owner)</text>
+          <text class="wu-n-file" y="15">plans.txt</text>
+        </g>
+        <g data-node="bob" transform="translate(150 150)">
+          <rect x="-62" y="-26" width="124" height="52" rx="6" />
+          <text class="wu-n-name" y="-3">Bob</text>
+          <text class="wu-n-file" y="15">mission.txt</text>
+        </g>
+        <g data-node="doris" transform="translate(450 150)">
+          <rect x="-62" y="-26" width="124" height="52" rx="6" />
+          <text class="wu-n-name" y="-3">Doris</text>
+          <text class="wu-n-file" y="15">notes.txt</text>
+        </g>
+        <g data-node="charles" transform="translate(150 248)">
+          <rect x="-62" y="-26" width="124" height="52" rx="6" />
+          <text class="wu-n-name" y="-3">Charles</text>
+          <text class="wu-n-file" y="15">copy.txt</text>
+        </g>
+        <g data-node="eve" transform="translate(450 248)">
+          <rect x="-62" y="-26" width="124" height="52" rx="6" />
+          <text class="wu-n-name" y="-3">Eve</text>
+          <text class="wu-n-file" y="15">plan-b.txt</text>
+        </g>
+      </g>
+    </svg>
+
+    <div class="wu-tree-panel">
+      <code class="wu-call" data-tree-call></code>
+      <p class="wu-tree-text" id="wu-tree-caption" data-tree-text aria-live="polite"></p>
+      <div class="wu-tree-nav">
+        <button class="link-pill wu-btn" type="button" data-tree-prev><Icon name="arrow-left" size={14} /> Back</button>
+        <span class="wu-step"><span data-tree-index>1</span> of <span data-tree-total>7</span></span>
+        <button class="link-pill wu-btn" type="button" data-tree-next>Next <Icon name="arrow-right" size={14} /></button>
+      </div>
+    </div>
+  </figure>
+
+  <h2 class="wu-h2">Append cost</h2>
+  <p>
+    The spec limits the bandwidth of an append. It may grow with the size of the appended data, but not with the size
+    of the file or the number of earlier appends. To check ours, I grew a file from 2 KB to 1 MB in 1 KB appends and
+    recorded the bytes moved using the course's bandwidth counter. The append cost was the same at every size. Loading
+    the 1 MB file cost 425 times as much as loading the 2 KB one, which is expected because a load fetches the whole
+    file.
+  </p>
+
+  <figure class="wu-fig wu-chart-fig">
+    <div class="wu-chart" id="wu-chart"></div>
+    <figcaption>
+      Bandwidth relative to the same operation on a 2 KB file. Both axes are logarithmic.
+      <details class="wu-details">
+        <summary>Data table</summary>
+        <table class="table wu-table" data-chart-table>
+          <thead><tr><th scope="col">File size</th><th scope="col">AppendToFile</th><th scope="col">LoadFile</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </figcaption>
+  </figure>
+
+  <h2 class="wu-h2">What I learned</h2>
+  <p>
+    The course supplies the primitives, and each one promises something narrow. CTR-mode encryption hides data but
+    doesn't stop someone flipping bits in it. An HMAC shows data wasn't changed, but only to someone holding the key. A
+    signature can be checked by anyone, but it is worth only as much as the link between the public key and the
+    username. Most of the work was making sure no part of the design leaned on a primitive for something it doesn't
+    provide.
+  </p>
+  <p>
+    Writing the threat model down before designing anything was the most useful step. Once we had listed what each
+    attacker could do, vague worries became specific cases to check the design against.
+  </p>
+  <p>
+    Having no local state shaped the design as much as any security requirement. Nothing can be assumed from an earlier
+    call, so every call has to verify what it reads from storage before using it.
+  </p>
+
+  <a class="db-action back-link wu-back" href="/projects"><Icon name="arrow-left" size={14} /> All projects</a>
+</BaseLayout>
+
+<style is:global>
+  /* ---------- Banner ---------- */
+  .wu-hero {
+    background: #0f1419;
+  }
+  .wu-hex {
+    position: absolute;
+    inset: -8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(26px, 1fr));
+    align-content: start;
+    font: 500 12px/22px ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgba(150, 190, 230, 0.32);
+    text-align: center;
+    user-select: none;
+  }
+  .wu-hex span {
+    transition: color 600ms ease;
+  }
+  .wu-hex span.on {
+    color: #8cc4ff;
+    transition: none;
+  }
+  .wu-hero-fade {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 90% at 50% 50%, rgba(15, 20, 25, 0) 0%, rgba(15, 20, 25, 0.75) 100%);
+  }
+
+  .wu-icon {
+    position: relative;
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    margin-top: -28px;
+    color: var(--text);
+    background: var(--bg);
+    border-radius: 6px;
+  }
+
+  /* ---------- Properties ---------- */
+  .wu-props {
+    display: grid;
+    gap: 2px;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+  .wu-props > div {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    min-height: 30px;
+  }
+  .wu-props dt {
+    color: var(--text-muted);
+  }
+  .wu-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* ---------- Type ---------- */
+  .wu-h2 {
+    margin: 40px 0 4px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .wu-h3 {
+    margin: 20px 0 2px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .page code {
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: var(--hover);
+    color: var(--text);
+    font: 85% ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* ---------- Figures ---------- */
+  .wu-fig {
+    margin: 16px 0 8px;
+    padding: 16px;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+    background: var(--bg);
+  }
+  .wu-fig figcaption {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .wu-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .page .wu-btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+  .page .wu-btn code {
+    padding: 0;
+    background: none;
+  }
+  .wu-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* Architecture */
+  .wu-arch {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1.3fr);
+    align-items: center;
+  }
+  .wu-arch-services {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .wu-arch-link {
+    height: 1px;
+    background: var(--divider);
+    position: relative;
+  }
+  .wu-arch-link::before,
+  .wu-arch-link::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    width: 1px;
+    height: 46px;
+    background: var(--divider);
+  }
+  .wu-arch-link::before { bottom: 0; }
+  .wu-arch-link::after { top: 0; }
+  .wu-node {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid var(--divider);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .wu-node-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .wu-node-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .wu-node-sub {
+    color: var(--text-muted);
+  }
+  .page code.wu-node-sub {
+    align-self: flex-start;
+  }
+
+  /* Tables */
+  .page .wu-table {
+    min-width: 0;
+    margin: 12px 0;
+  }
+  .wu-table th[scope="row"] {
+    width: 30%;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 1px solid var(--divider);
+  }
+  .wu-table tr:first-child th,
+  .wu-table tr:first-child td {
+    border-top: 1px solid var(--divider);
+  }
+  .wu-api td:first-child {
+    width: 46%;
+  }
+  .wu-api .wu-api-group th {
+    padding-top: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-left: 0;
+  }
+  .wu-api tr:first-child th {
+    padding-top: 8px;
+  }
+  .wu-api td {
+    color: var(--text-muted);
+  }
+  .wu-api td code {
+    white-space: nowrap;
+  }
+  .wu-chart-fig .wu-table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Simulation */
+  .wu-sim {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 16px;
+  }
+  .wu-sim-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .wu-file {
+    padding: 10px 12px;
+    border: 1px solid var(--divider);
+    border-radius: 6px;
+  }
+  .page .wu-file-name {
+    padding: 0;
+    background: none;
+    color: var(--text-muted);
+  }
+  .wu-file-body {
+    margin-top: 4px;
+    transition: opacity 200ms ease, filter 200ms ease;
+  }
+  .wu-file-body.gone {
+    opacity: 0.3;
+    filter: blur(3px);
+  }
+  .wu-sim .wu-btn[data-sim-load] {
+    align-self: flex-start;
+  }
+  .wu-result {
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-muted);
+    background: var(--sidebar-bg);
+  }
+  .wu-result.ok { background: var(--tag-green); color: var(--text); }
+  .wu-result.err { background: var(--tag-red); color: var(--text); }
+  .wu-entries {
+    list-style: none;
+    padding: 6px;
+    border-radius: 4px;
+    background: var(--sidebar-bg);
+    font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-muted);
+  }
+  .wu-entries li {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 10px;
+    padding: 0 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .wu-entries .v {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-faint);
+  }
+  .wu-entries li.hit { background: var(--tag-red); }
+  .wu-entries li.hit .v { color: var(--text); }
+  .wu-entries li.dead span { text-decoration: line-through; }
+  .wu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Share tree */
+  .wu-tree-svg {
+    display: block;
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    margin: 0 auto;
+  }
+  .wu-edges path {
+    fill: none;
+    stroke: var(--text-faint);
+    stroke-width: 1;
+    transition: opacity 250ms ease;
+  }
+  .wu-edges path[data-state="hidden"] { opacity: 0; }
+  .wu-edges path[data-state="pending"] { stroke-dasharray: 4 4; }
+  .wu-edges path[data-state="revoked"] { stroke-dasharray: 2 4; }
+  .wu-nodes g { transition: opacity 250ms ease; }
+  .wu-nodes rect {
+    fill: var(--bg);
+    stroke: var(--text-faint);
+    stroke-width: 1;
+    transition: fill 250ms ease, stroke 250ms ease;
+  }
+  .wu-nodes text {
+    text-anchor: middle;
+    fill: var(--text);
+  }
+  .wu-n-name { font: 600 14px var(--font); }
+  .wu-n-file { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; fill: var(--text-muted) !important; }
+  .wu-nodes g[data-state="hidden"] { opacity: 0; }
+  .wu-nodes g[data-state="pending"] rect { stroke-dasharray: 4 4; }
+  .wu-nodes g[data-state="active"] rect { stroke: var(--text); }
+  .wu-nodes g[data-state="revoked"] rect { fill: var(--tag-red); stroke: var(--tag-red); }
+  .wu-nodes g[data-state="revoked"] .wu-n-name { text-decoration: line-through; }
+  .wu-tree-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--divider);
+  }
+  .page .wu-call {
+    display: block;
+    padding: 8px 10px;
+    background: var(--sidebar-bg);
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+  }
+  .page .wu-tree-text {
+    min-height: 48px;
+    padding: 0;
+    font-size: 14px;
+  }
+  .wu-tree-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wu-step {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Chart */
+  .wu-chart { position: relative; }
+  .wu-chart svg { display: block; width: 100%; overflow: visible; }
+  .wu-chart .grid line { stroke: var(--divider); }
+  .wu-chart .axis text { fill: var(--text-faint); font: 11px var(--font); }
+  .wu-chart .series path { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .wu-chart .direct { font: 500 12px var(--font); fill: var(--text-muted); }
+  .wu-chart .cross { stroke: var(--text-faint); stroke-dasharray: 3 3; }
+  .wu-tip {
+    position: absolute;
+    pointer-events: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    background: var(--bg);
+    box-shadow: var(--card-shadow-hover);
+    font-size: 12px;
+    white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 10px));
+  }
+  .wu-tip b { display: block; margin-bottom: 2px; font-weight: 600; }
+  .wu-details { margin-top: 6px; }
+  .wu-details summary { cursor: pointer; }
+
+  .wu-back {
+    margin-top: 40px;
+  }
+
+  @media (max-width: 760px) {
+    .wu-arch { grid-template-columns: 1fr; gap: 0; }
+    .wu-arch-link { width: 1px; height: 16px; margin-left: 24px; }
+    .wu-arch-link::before,
+    .wu-arch-link::after { display: none; }
+    .wu-sim { grid-template-columns: 1fr; }
+    .wu-props > div { grid-template-columns: 96px 1fr; }
+    .wu-api td:first-child { width: auto; }
+    .wu-api td code { white-space: normal; }
+  }
+</style>
+
+<script>
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const HEX = "0123456789abcdef";
+  const randHex = (n: number) => Array.from({ length: n }, () => HEX[(Math.random() * 16) | 0]).join("");
+
+  // ---------- Banner: shimmering ciphertext ----------
+  {
+    const field = document.getElementById("wu-hex")!;
+    const cells: HTMLSpanElement[] = [];
+    for (let i = 0; i < 900; i++) {
+      const s = document.createElement("span");
+      s.textContent = randHex(2);
+      field.appendChild(s);
+      cells.push(s);
+    }
+    if (!reduceMotion) {
+      setInterval(() => {
+        for (let i = 0; i < 10; i++) {
+          const c = cells[(Math.random() * cells.length) | 0];
+          c.textContent = randHex(2);
+          c.classList.add("on");
+          setTimeout(() => c.classList.remove("on"), 60);
+        }
+      }, 90);
+    }
+  }
+
+  // ---------- Tamper demo ----------
+  {
+    const root = document.getElementById("wu-sim")!;
+    const list = root.querySelector<HTMLOListElement>("[data-sim-entries]")!;
+    const result = root.querySelector<HTMLDivElement>("[data-sim-result]")!;
+    const body = root.querySelector<HTMLDivElement>("[data-sim-body]")!;
+    const size = new TextEncoder().encode(body.textContent ?? "").length;
+    type Entry = { k: string; v: string; hit?: boolean; dead?: boolean };
+    let entries: Entry[] = [];
+    let tampered = false;
+
+    const idle = "Datastore is unmodified.";
+    const setResult = (cls: string, text: string) => {
+      result.className = "wu-result " + cls;
+      result.textContent = text;
+    };
+    const fresh = () => {
+      entries = Array.from({ length: 8 }, () => ({ k: randHex(8), v: randHex(64) }));
+      tampered = false;
+      body.classList.remove("gone");
+      setResult("", idle);
+    };
+    const render = () => {
+      list.innerHTML = "";
+      for (const e of entries) {
+        const li = document.createElement("li");
+        li.className = (e.hit ? "hit " : "") + (e.dead ? "dead" : "");
+        li.innerHTML = `<span>${e.k}</span><span class="v">${e.v}</span>`;
+        list.appendChild(li);
+      }
+    };
+
+    root.querySelector("[data-sim-load]")!.addEventListener("click", () => {
+      if (tampered) {
+        body.classList.add("gone");
+        setResult("err", "error: file could not be verified");
+      } else {
+        body.classList.remove("gone");
+        setResult("ok", `ok: ${size} bytes`);
+      }
+    });
+
+    root.querySelectorAll<HTMLButtonElement>("[data-sim-attack]").forEach((b) =>
+      b.addEventListener("click", () => {
+        entries.forEach((e) => (e.hit = false));
+        const live = entries.filter((e) => !e.dead);
+        if (live.length < 2) return;
+        const a = live[(Math.random() * live.length) | 0];
+        const kind = b.dataset.simAttack;
+        if (kind === "flip") {
+          const i = (Math.random() * a.v.length) | 0;
+          const flipped = (parseInt(a.v[i], 16) ^ (1 << ((Math.random() * 4) | 0))).toString(16);
+          a.v = a.v.slice(0, i) + flipped + a.v.slice(i + 1);
+        } else if (kind === "swap") {
+          let other = a;
+          while (other === a) other = live[(Math.random() * live.length) | 0];
+          [a.v, other.v] = [other.v, a.v];
+          other.hit = true;
+        } else {
+          a.dead = true;
+        }
+        a.hit = true;
+        tampered = true;
+        render();
+        setResult("", "Datastore modified. Load the file to see what happens.");
+      })
+    );
+
+    root.querySelector("[data-sim-reset]")!.addEventListener("click", () => {
+      fresh();
+      render();
+    });
+
+    fresh();
+    render();
+  }
+
+  // ---------- Share tree stepper ----------
+  {
+    const root = document.getElementById("wu-tree")!;
+    type S = "hidden" | "pending" | "active" | "revoked";
+    const users = ["alice", "bob", "doris", "charles", "eve"] as const;
+    const steps: { call: string; text: string; nodes: Partial<Record<(typeof users)[number], S>> }[] = [
+      {
+        call: 'alice.StoreFile("plans.txt", data)',
+        text: "Alice creates a file. She is its owner and the root of its share tree.",
+        nodes: { alice: "active" },
+      },
+      {
+        call: 'inv := alice.CreateInvitation("plans.txt", "bob")',
+        text: "Alice invites Bob. Until he accepts he can't read the file, and he has to be able to verify that the invitation came from Alice.",
+        nodes: { alice: "active", bob: "pending" },
+      },
+      {
+        call: 'bob.AcceptInvitation("alice", inv, "mission.txt")',
+        text: "Bob accepts under his own filename. It's the same file as Alice's plans.txt.",
+        nodes: { alice: "active", bob: "active" },
+      },
+      {
+        call: 'alice shares with doris, who names it "notes.txt"\nbob shares with charles, who names it "copy.txt"\ndoris shares with eve, who names it "plan-b.txt"',
+        text: "Anyone with access can share further. Charles got the file from Bob, not from Alice.",
+        nodes: { alice: "active", bob: "active", doris: "active", charles: "active", eve: "active" },
+      },
+      {
+        call: 'charles.AppendToFile("copy.txt", update)',
+        text: "There is one copy of the file, so everyone sees Charles's change on their next load, on any device.",
+        nodes: { alice: "active", bob: "active", doris: "active", charles: "active", eve: "active" },
+      },
+      {
+        call: 'alice.RevokeAccess("plans.txt", "bob")',
+        text: "Alice revokes Bob. Bob and Charles lose access. Doris and Eve keep it without accepting anything again.",
+        nodes: { alice: "active", bob: "revoked", doris: "active", charles: "revoked", eve: "active" },
+      },
+      {
+        call: 'bob.LoadFile("mission.txt")   // error\neve.LoadFile("plan-b.txt")    // latest contents',
+        text: "Bob and Charles may still have old data and may read storage directly. They learn nothing about later contents, and any change they make is detected.",
+        nodes: { alice: "active", bob: "revoked", doris: "active", charles: "revoked", eve: "active" },
+      },
+    ];
+
+    let i = 0;
+    const call = root.querySelector<HTMLElement>("[data-tree-call]")!;
+    const text = root.querySelector<HTMLElement>("[data-tree-text]")!;
+    const idx = root.querySelector<HTMLElement>("[data-tree-index]")!;
+    root.querySelector<HTMLElement>("[data-tree-total]")!.textContent = String(steps.length);
+    const prev = root.querySelector<HTMLButtonElement>("[data-tree-prev]")!;
+    const next = root.querySelector<HTMLButtonElement>("[data-tree-next]")!;
+
+    const draw = () => {
+      const s = steps[i];
+      call.textContent = s.call;
+      text.textContent = s.text;
+      idx.textContent = String(i + 1);
+      for (const u of users) {
+        const state = s.nodes[u] ?? "hidden";
+        root.querySelector<SVGGElement>(`[data-node="${u}"]`)!.dataset.state = state;
+        const edge = root.querySelector<SVGPathElement>(`[data-edge="${u}"]`);
+        if (edge) edge.dataset.state = state;
+      }
+      prev.disabled = i === 0;
+      next.disabled = i === steps.length - 1;
+    };
+
+    prev.addEventListener("click", () => { if (i > 0) { i--; draw(); } });
+    next.addEventListener("click", () => { if (i < steps.length - 1) { i++; draw(); } });
+    draw();
+  }
+
+  // ---------- Append cost chart ----------
+  {
+    // Bandwidth relative to the same operation on a 2 KB file
+    const data = [
+      { kb: 2, append: 1, load: 1 },
+      { kb: 4, append: 1, load: 1.83 },
+      { kb: 8, append: 1, load: 3.49 },
+      { kb: 16, append: 1, load: 6.8 },
+      { kb: 32, append: 1, load: 13.44 },
+      { kb: 64, append: 1, load: 26.7 },
+      { kb: 128, append: 1, load: 53.24 },
+      { kb: 256, append: 1, load: 106.31 },
+      { kb: 512, append: 1, load: 212.44 },
+      { kb: 1024, append: 1, load: 424.71 },
+    ];
+    const label = (kb: number) => (kb >= 1024 ? `${kb / 1024} MB` : `${kb} KB`);
+    const fmt = (x: number) => (x < 10 ? parseFloat(x.toFixed(2)) : Math.round(x)) + "×";
+
+    const tbody = document.querySelector<HTMLTableSectionElement>("[data-chart-table] tbody")!;
+    tbody.innerHTML = data.map((d) => `<tr><td>${label(d.kb)}</td><td>${fmt(d.append)}</td><td>${fmt(d.load)}</td></tr>`).join("");
+
+    const host = document.getElementById("wu-chart")!;
+    const NS = "http://www.w3.org/2000/svg";
+    const el = (tag: string, attrs: Record<string, string | number> = {}, parent?: Element) => {
+      const n = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
+      parent?.appendChild(n);
+      return n;
+    };
+    const series = [
+      { key: "append" as const, color: "var(--focus)", name: "Append" },
+      { key: "load" as const, color: "var(--text-muted)", name: "Load" },
+    ];
+
+    let lastW = 0;
+    const render = () => {
+      const W = host.clientWidth;
+      if (W === lastW) return;
+      lastW = W;
+      host.innerHTML = "";
+      const narrow = W < 480;
+      const H = narrow ? 220 : 260;
+      const m = { t: 10, r: 92, b: 28, l: 44 };
+      const iw = W - m.l - m.r;
+      const ih = H - m.t - m.b;
+      const x = (kb: number) => m.l + (Math.log2(kb / 2) / Math.log2(512)) * iw;
+      const y = (v: number) => m.t + ih - (Math.log10(v / 0.5) / Math.log10(1000 / 0.5)) * ih;
+
+      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": "AppendToFile stays at 1× while LoadFile grows to 425× as the file grows from 2 KB to 1 MB" }, host);
+      const grid = el("g", { class: "grid" }, svg);
+      const axis = el("g", { class: "axis" }, svg);
+      for (const v of [1, 10, 100, 1000]) {
+        el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v) }, grid);
+        el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, axis).textContent = `${v}×`;
+      }
+      for (const kb of narrow ? [2, 32, 1024] : [2, 8, 32, 128, 512]) {
+        el("text", { x: x(kb), y: m.t + ih + 18, "text-anchor": "middle" }, axis).textContent = label(kb);
+      }
+
+      for (const s of series) {
+        const g = el("g", { class: "series" }, svg);
+        el("path", { d: data.map((d, j) => `${j ? "L" : "M"}${x(d.kb)},${y(d[s.key])}`).join(""), stroke: s.color }, g);
+        const last = data[data.length - 1];
+        el("text", { class: "direct", x: x(last.kb) + 8, y: y(last[s.key]) + 4 }, svg).textContent = `${s.name} ${fmt(last[s.key])}`;
+      }
+
+      const cross = el("line", { class: "cross", y1: m.t, y2: m.t + ih, visibility: "hidden" }, svg);
+      const dots = series.map((s) => el("circle", { r: 3.5, fill: s.color, stroke: "var(--bg)", "stroke-width": 2, visibility: "hidden" }, svg));
+      const tip = document.createElement("div");
+      tip.className = "wu-tip";
+      tip.hidden = true;
+      host.appendChild(tip);
+      const hit = el("rect", { x: m.l - 10, y: 0, width: iw + 20, height: H, fill: "transparent" }, svg);
+      hit.addEventListener("pointermove", (e) => {
+        const px = (e as PointerEvent).clientX - host.getBoundingClientRect().left;
+        let best = data[0];
+        for (const d of data) if (Math.abs(x(d.kb) - px) < Math.abs(x(best.kb) - px)) best = d;
+        const cx = x(best.kb);
+        cross.setAttribute("x1", String(cx));
+        cross.setAttribute("x2", String(cx));
+        cross.setAttribute("visibility", "visible");
+        series.forEach((s, j) => {
+          dots[j].setAttribute("cx", String(cx));
+          dots[j].setAttribute("cy", String(y(best[s.key])));
+          dots[j].setAttribute("visibility", "visible");
+        });
+        tip.innerHTML = `<b>${label(best.kb)} file</b>` + series.map((s) => `<div>${s.name} ${fmt(best[s.key])}</div>`).join("");
+        tip.hidden = false;
+        tip.style.left = `${Math.min(Math.max(cx, 60), W - 60)}px`;
+        tip.style.top = `${y(best.load)}px`;
+      });
+      hit.addEventListener("pointerleave", () => {
+        tip.hidden = true;
+        cross.setAttribute("visibility", "hidden");
+        dots.forEach((d) => d.setAttribute("visibility", "hidden"));
+      });
+    };
+
+    render();
+    new ResizeObserver(() => requestAnimationFrame(render)).observe(host);
+  }
+</script>

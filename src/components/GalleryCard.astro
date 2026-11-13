@@ -1,14 +1,17 @@
 ---
 import { tagColor } from "../data/projects";
 
-const { title, img, desc, url, tags = [] } = Astro.props;
+const { title, img, desc, url, course, tags = [] } = Astro.props;
+// Write-ups hosted on this site open in place; project subsites open in a new tab
+const external = /^https?:\/\//.test(url);
 ---
 
-<a class="card" href={url} target="_blank" rel="noreferrer">
+<a class="card" href={url} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
   <div class="card-image">
     <img src={img} alt="" loading="lazy" />
   </div>
   <div class="card-body">
+    {course && <span class="card-course">{course}</span>}
     <h3 class="card-title">{title}</h3>
     <p class="card-desc">{desc}</p>
     <div class="card-tags">

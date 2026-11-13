@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="A padlock surrounded by encrypted data blocks">
+  <style>
+    .bg { fill: #f3f1ec; }
+    .grid { stroke: #37352f; stroke-opacity: 0.07; }
+    .blk { fill: #ffffff; stroke: #37352f; stroke-opacity: 0.16; }
+    .hex { fill: #37352f; fill-opacity: 0.38; font: 500 15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .wire { stroke: #37352f; stroke-opacity: 0.22; stroke-width: 2; fill: none; stroke-dasharray: 4 6; }
+    .body { fill: #2f6f8f; }
+    .shackle { stroke: #2f6f8f; stroke-width: 22; fill: none; stroke-linecap: round; }
+    .hole { fill: #f3f1ec; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #222222; }
+      .grid { stroke: #ffffff; stroke-opacity: 0.06; }
+      .blk { fill: #2b2b2b; stroke: #ffffff; stroke-opacity: 0.14; }
+      .hex { fill: #ffffff; fill-opacity: 0.4; }
+      .wire { stroke: #ffffff; stroke-opacity: 0.2; }
+      .body { fill: #5b9bbd; }
+      .shackle { stroke: #5b9bbd; }
+      .hole { fill: #222222; }
+    }
+  </style>
+  <rect class="bg" width="800" height="500" />
+  <g class="grid">
+    <path d="M0 100H800M0 200H800M0 300H800M0 400H800M100 0V500M200 0V500M300 0V500M400 0V500M500 0V500M600 0V500M700 0V500" />
+  </g>
+  <path class="wire" d="M170 120 C 280 120, 300 250, 360 250" />
+  <path class="wire" d="M170 380 C 280 380, 300 250, 360 250" />
+  <path class="wire" d="M630 120 C 520 120, 500 250, 440 250" />
+  <path class="wire" d="M630 380 C 520 380, 500 250, 440 250" />
+  <g>
+    <rect class="blk" x="40" y="88" width="160" height="64" rx="10" />
+    <text class="hex" x="58" y="127">9f 3a c1 07 e2</text>
+    <rect class="blk" x="40" y="348" width="160" height="64" rx="10" />
+    <text class="hex" x="58" y="387">4d b8 05 7e 91</text>
+    <rect class="blk" x="600" y="88" width="160" height="64" rx="10" />
+    <text class="hex" x="618" y="127">e0 62 af 1c 3b</text>
+    <rect class="blk" x="600" y="348" width="160" height="64" rx="10" />
+    <text class="hex" x="618" y="387">71 0d 9c 48 f6</text>
+  </g>
+  <path class="shackle" d="M352 232 V180 a48 48 0 0 1 96 0 V232" />
+  <rect class="body" x="320" y="226" width="160" height="132" rx="18" />
+  <circle class="hole" cx="400" cy="280" r="15" />
+  <rect class="hole" x="393" y="286" width="14" height="36" rx="7" />
+</svg>
